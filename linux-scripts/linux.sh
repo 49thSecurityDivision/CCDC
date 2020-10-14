@@ -42,14 +42,12 @@ harden_system() {
 	cat /etc/ssh/sshd_config | grep PermitRootLogin | grep yes
 	if [ $?==0 ]; then
     	sed -i 's/PermitRootLogin yes/PermitRootLogin no/g' /etc/ssh/sshd_config
-		break>> /dev/null
 	fi
 
 	cat /etc/ssh/sshd_config | grep Protocol | grep 1
 	if [ $?==0 ]; then
     	sed -i 's/Protocol 2,1/Protocol 2/g' /etc/ssh/sshd_config
         sed -i 's/Protocol 1,2/Protocol 2/g' /etc/ssh/sshd_config
-		break>> /dev/null
 	fi
 
 	grep X11Forwarding /etc/ssh/sshd_config | grep yes
@@ -62,14 +60,12 @@ harden_system() {
 	grep PermitEmptyPasswords /etc/ssh/sshd_config | grep yes
 	if [ $?==0 ]; then
     	sed -i 's/PermitEmptyPasswords yes/PermitEmptyPasswords no/g' /etc/ssh/sshd_config
-		break>> /dev/null
 	fi
 
 	grep NOPASSWD /etc/sudoers
 	if [ $?==0 ]; then
         EX=$(grep NOPASSWD /etc/sudoers)
 		sed -i 's/$EX/ /g' /etc/sudoers
-		break>> /dev/null
 	fi
 
 	echo "$(ls /etc/sudoers.d/)"
