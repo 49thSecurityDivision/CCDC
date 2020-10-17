@@ -29,8 +29,8 @@ harden_system() {
 	# /etc/hosts file
 	if [ -s /etc/hosts ]; then
 	echo "Clearing HOSTS file"
-		echo $(date): Clearing HOSTS file >> /var/log/mikescript.log
-		echo 127.0.0.1	localhost > /etc/hosts
+		echo $(hostname) localhost > /etc/hosts
+		echo 127.0.0.1	localhost >> /etc/hosts
 		echo ::1     ip6-localhost ip6-loopback >> /etc/hosts
 		echo fe00::0 ip6-localnet >> /etc/hosts
 		echo ff00::0 ip6-mcastprefix >> /etc/hosts
@@ -68,8 +68,9 @@ harden_system() {
 		sed -i 's/$EX/ /g' /etc/sudoers
 	fi
 
-	echo "$(ls /etc/sudoers.d/)"
-	sleep 2
+	# Remove extra sudoers files if exists
+	mkdir /tmp/sudoers.bak
+	ls /etc/sudoers.d | grep -v "ccsclient_sudoers README" | xargs -I {} mv /tmp/sudoers.bak
 
 	#TODO Add install process for libpam-cracklib
 	echo "Make sure libpam-cracklib is installed!"
@@ -121,6 +122,38 @@ harden_system() {
 	
 	# Copy result back. Don't use "mv" or "cp" to keep owner, group and access-mode
 	cat $NEWFILE > $OLDFILE
+
+	# Remove extra cron jobs
+	mkdir /tmp/cron.bak
+	ls /etc/cron.d | grep -v "anacron\|popularity-contest" | xargs -I {} mv /etc/cron.d/{} /tmp/cron.bak
+
+	# Disable root login
+	sudo passwd --lock root
+
+	"Echo media files on system..."
+	sleep 3
+	find /. -type f | grep -iE "\.webm$|\.flv$|\.vob$|\.ogg$|\.ogv$|\.drc$|\.gifv$|\.mng$|\.avi$|\.mov$|\.qt$|\.wmv$|\.yuv$|\.rm$|\.rmvb$|/.asf$|\.amv$|\.mp4$|\.m4v$|\.mp*$|\.m?v$|\.svi$|\.3gp$|\.flv$|\.f4v$"
+}
+
+users_ops() {
+	users=( $(cat $1) )
+	read -p "If you didn't pass all the valid of users, please stop and try again. Continue? (Y/n)" answer
+	if echo "$answer" | grep -iq "^n"; then
+		exit
+	fi
+	echo "Deleting users with login /bin/bash not included in list..."
+	current=( $(grep "/bin/bash\|/bin/sh" /etc/passwd | awk -F : '{print $1}') )
+	echo ${users[@]} ${current} | tr ' ' '\n' | sort | uniq -u | xargs -I {} sudo deluser {}
+}
+
+update_apt() {
+	read -p "This is for Ubuntu 16, continue (Y/n)" answer
+	if grep -iq "^n" "$answer"; then
+		exit
+	fi
+	curl https://gist.githubusercontent.com/rohitrawat/60a04e6ebe4a9ec1203eac3a11d4afc1/raw/fcdfde2ab57e455ba9b37077abf85a81c504a4a9/sources.list | tee /etc/apt/source.list
+	echo "Get ready to wait"
+	apt upgrade -y
 }
 
 # Install programs
@@ -141,6 +174,10 @@ case $op in
 		change_pass $2 $3 ;;
 	2) 
 		setup ;;
+	3)
+		users_ops $2;;
+	4)
+		update_apt ;;
 	*)
 		show_op ;;
 esac
