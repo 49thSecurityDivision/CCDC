@@ -165,7 +165,9 @@ setup() {
 show_op() {
 	echo -e "\nThis script supports the following functions and arguements...\n" \
 			"\tCHANGE_PASSWORD:\t1 USERS.TXT PASSWORD_TO_CHANGE_TO\n" \
-			"\tSETUP AND HARDEN:\t2\n"
+			"\tSETUP AND HARDEN:\t2\n" \
+			"\tDEL USERS NOT IN FILE:\t3\n USERS.TXT" \
+			"\tUPDATE APT:\t\t4\n" 
 }
 
 
