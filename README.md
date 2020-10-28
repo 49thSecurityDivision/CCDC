@@ -84,3 +84,6 @@ List the attributes in CSV format of files in the current folder and subfolders
 (user.group, mode, size, filetype,modification time,filename):
 
     find . | xargs -n1 stat  --format="%U.%G,en%a,%s,'%F',%i,'%y','%n'" > /tmp/perms
+
+## Sources
+- [RedHat](https://meet.google.com/linkredirect?authuser=0&dest=https%3A%2F%2Faccess.redhat.com%2Fdocumentation%2Fen-us%2Fred_hat_enterprise_linux%2F7%2Fhtml%2Fsecurity_guide%2Fchap-hardening_your_system_with_tools_and_services)
